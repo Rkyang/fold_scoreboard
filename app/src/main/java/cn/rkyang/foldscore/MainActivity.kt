@@ -89,7 +89,9 @@ class MainActivity : ComponentActivity(), WindowAreaPresentationSessionCallback 
 
                 if (showConfig) {
                     ConfigDialog(
+                        // 👇 传入当前颜色
                         initialName = if(isEditingLeft) viewModel.leftName else viewModel.rightName,
+                        initialColor = if(isEditingLeft) viewModel.leftColor else viewModel.rightColor,
                         onDismiss = { showConfig = false },
                         onConfirm = { name, color ->
                             if(isEditingLeft) {

@@ -33,6 +33,14 @@ class ScoreViewModel(application: Application) : AndroidViewModel(application) {
 
     fun incrementLeft() { leftScore++ }
     fun incrementRight() { rightScore++ }
+
+    // 新增：减分逻辑
+    fun decrementLeft() {
+        if (leftScore > 0) leftScore--
+    }
+    fun decrementRight() {
+        if (rightScore > 0) rightScore--
+    }
     fun resetScore() { leftScore = 0; rightScore = 0 }
 
     // 保存当前比分到历史

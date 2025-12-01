@@ -62,6 +62,14 @@ import android.content.pm.ActivityInfo
 import androidx.compose.ui.platform.LocalContext
 // 确保包含 ScreenRotation 图标
 import androidx.compose.material.icons.filled.ScreenRotation
+// 引入 Remove (减号) 图标
+import androidx.compose.material.icons.filled.Remove
+// 动画所需引入
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.scale
 
 // --- 组件：单个队伍的计分面板 ---
 @Composable
@@ -70,27 +78,54 @@ fun TeamPanel(
     name: String,
     score: Int,
     bgColor: Color,
-    onScoreClick: () -> Unit,
-    onEditConfig: () -> Unit // 触发配置修改的点击
+    onIncrementClick: () -> Unit, // 加分
+    onDecrementClick: () -> Unit, // 减分
+    onEditConfig: () -> Unit
 ) {
+    // 👇 新增：分数动画状态
+    val scale = remember { Animatable(1f) }
+
+    // 监听分数变化，触发缩放动画
+    LaunchedEffect(score) {
+        // 当分数改变时，执行快速放大再缩小的动画
+        scale.animateTo(1.1f, animationSpec = tween(100))
+        scale.animateTo(1f, animationSpec = tween(100))
+    }
+
     Column(
         modifier = modifier
             .background(bgColor)
-            .clickable { onScoreClick() }, // 点击整个区域加分
+            .clickable { onIncrementClick() }, // 点击整个区域加分
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = name, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text(text = name, fontSize = 28.sp, fontWeight = FontWeight.Bold) // 字体加大
         Spacer(modifier = Modifier.height(20.dp))
-        Text(text = "$score", fontSize = 120.sp, fontWeight = FontWeight.ExtraBold)
+        Text(
+            text = "$score",
+            fontSize = 150.sp, // 字体加大
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.padding(16.dp).scale(scale.value) // 应用缩放动画
+        )
         Spacer(modifier = Modifier.height(20.dp))
-        Button(onClick = onScoreClick) {
-            Icon(Icons.Default.Add, contentDescription = "Add")
-            Text(" 加分")
+
+        // 👇 新增：加分和减分按钮并排
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Button(onClick = onDecrementClick) {
+                Icon(Icons.Default.Remove, contentDescription = "Remove")
+                Text(" 减分")
+            }
+            Button(onClick = onIncrementClick) {
+                Icon(Icons.Default.Add, contentDescription = "Add")
+                Text(" 加分")
+            }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         // 允许在面板上触发配置修改
         Button(onClick = onEditConfig) {
-            Text("配置")
+            Text("配置队伍")
         }
     }
 }
@@ -149,7 +184,8 @@ fun MainControlScreen(
                 name = viewModel.leftName,
                 score = viewModel.leftScore,
                 bgColor = viewModel.leftColor,
-                onScoreClick = { viewModel.incrementLeft() },
+                onIncrementClick = { viewModel.incrementLeft() }, // 传入加分
+                onDecrementClick = { viewModel.decrementLeft() }, // 传入减分
                 onEditConfig = { onEditConfig(true) }
             )
             // 分割线
@@ -160,7 +196,8 @@ fun MainControlScreen(
                 name = viewModel.rightName,
                 score = viewModel.rightScore,
                 bgColor = viewModel.rightColor,
-                onScoreClick = { viewModel.incrementRight() },
+                onIncrementClick = { viewModel.incrementRight() }, // 传入加分
+                onDecrementClick = { viewModel.decrementRight() }, // 传入减分
                 onEditConfig = { onEditConfig(false) }
             )
         }
@@ -171,13 +208,27 @@ fun MainControlScreen(
 @Composable
 fun ConfigDialog(
     initialName: String,
+    initialColor: Color, // 👇 新增参数
     onDismiss: () -> Unit,
     onConfirm: (String, Color) -> Unit
 ) {
     var text by remember { mutableStateOf(initialName) }
-    // 简单预设几个颜色
-    val colors = listOf(Color(0xFFE3F2FD), Color(0xFFFFEBEE), Color(0xFFE8F5E9), Color(0xFFFFF3E0))
-    var selectedColor by remember { mutableStateOf(colors.first()) }
+
+    // 👇 更多预设颜色
+    val colors = remember {
+        listOf(
+            Color(0xFFE3F2FD), // 淡蓝
+            Color(0xFFFFEBEE), // 淡红
+            Color(0xFFE8F5E9), // 淡绿
+            Color(0xFFFFF3E0), // 淡橙
+            Color(0xFFFCE4EC), // 淡粉
+            Color(0xFFF3E5F5), // 淡紫
+            Color(0xFFECEFF1), // 淡灰
+            Color(0xFFB3E5FC), // 浅青
+            Color(0xFFFFCCBC)  // 浅橘
+        )
+    }
+    var selectedColor by remember { mutableStateOf(initialColor) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -187,17 +238,20 @@ fun ConfigDialog(
                 OutlinedTextField(value = text, onValueChange = { text = it }, label = { Text("队名") })
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("选择背景色:")
-                Row {
+                // 👇 使用 LazyRow 或 Row 容纳更多颜色，并添加边框逻辑
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     colors.forEach { color ->
+                        val isSelected = selectedColor == color
                         Box(
                             modifier = Modifier
-                                .size(40.dp)
-                                .padding(4.dp)
+                                .weight(1f)
+                                .height(40.dp)
                                 .background(color)
+                                .border( // 👇 选中边框样式
+                                    width = if (isSelected) 3.dp else 1.dp,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
+                                )
                                 .clickable { selectedColor = color }
-                                .let {
-                                    if (selectedColor == color) it.width(44.dp).height(44.dp) else it // 选中高亮
-                                }
                         )
                     }
                 }

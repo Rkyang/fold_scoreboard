@@ -95,7 +95,7 @@ class ScorePresentation(
                                 Spacer(modifier = Modifier.height(20.dp))
                                 Text(
                                     text = "$lScore",
-                                    fontSize = 180.sp,
+                                    fontSize = 200.sp, // 分数字体大小
                                     fontWeight = FontWeight.Black,
                                     color = Color.Black
                                 )
@@ -123,7 +123,7 @@ class ScorePresentation(
                                 Spacer(modifier = Modifier.height(20.dp))
                                 Text(
                                     text = "$rScore",
-                                    fontSize = 180.sp,
+                                    fontSize = 200.sp, // 分数字体大小
                                     fontWeight = FontWeight.Black,
                                     color = Color.Black
                                 )
