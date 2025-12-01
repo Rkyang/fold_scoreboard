@@ -70,6 +70,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
 import androidx.compose.ui.draw.scale
+// 删除图标
+import androidx.compose.material.icons.filled.Delete
 
 // --- 组件：单个队伍的计分面板 ---
 @Composable
@@ -267,27 +269,87 @@ fun ConfigDialog(
 
 // --- 弹窗：历史记录 ---
 @Composable
-fun HistoryDialog(history: List<ScoreRecord>, onDismiss: () -> Unit) {
+fun HistoryDialog(
+    history: List<ScoreRecord>,
+    onDismiss: () -> Unit,
+    onDelete: (Int) -> Unit // 👇 新增：删除回调函数 (传入要删除的记录ID)
+) {
     Dialog(onDismissRequest = onDismiss) {
-        Surface(shape = MaterialTheme.shapes.medium, modifier = Modifier.height(500.dp)) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("最近30场记录", style = MaterialTheme.typography.titleLarge)
+        // 使用 Card 并增大尺寸，增加美观度
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .height(600.dp)
+        ) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                Text(
+                    "最近比分历史",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color.LightGray))
                 Spacer(modifier = Modifier.height(8.dp))
+
                 LazyColumn {
-                    items(history) { record ->
-                        Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                    // 使用 key 提高性能和稳定性
+                    items(history, key = { it.id }) { record ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp)
+                        ) {
                             Row(
-                                modifier = Modifier.padding(16.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Column {
-                                    Text("${record.leftName} vs ${record.rightName}", fontWeight = FontWeight.Bold)
-                                    Text(SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(record.timestamp)))
+                                // 左侧：时间和名称
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        "${record.leftName} vs ${record.rightName}",
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                    Text(
+                                        SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(record.timestamp)),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.Gray
+                                    )
                                 }
-                                Text("${record.leftScore} : ${record.rightScore}", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+                                // 中间：比分
+                                Text(
+                                    "${record.leftScore} : ${record.rightScore}",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                )
+
+                                // 右侧：删除按钮
+                                IconButton(
+                                    onClick = { onDelete(record.id) }, // 调用删除回调，传入记录ID
+                                    modifier = Modifier.size(40.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = "删除记录",
+                                        tint = Color.Red
+                                    )
+                                }
                             }
                         }
                     }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 底部关闭按钮
+                Button(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) {
+                    Text("关闭")
                 }
             }
         }

@@ -33,6 +33,10 @@ interface ScoreDao {
         insert(record)
         cleanOldRecords()
     }
+
+    // 根据ID删除指定的历史记录
+    @Query("DELETE FROM scores WHERE id = :recordId")
+    suspend fun deleteById(recordId: Int)
 }
 
 // 3. Database

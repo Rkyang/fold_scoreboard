@@ -85,7 +85,17 @@ class MainActivity : ComponentActivity(), WindowAreaPresentationSessionCallback 
                     }
                 )
 
-                if (showHistory) HistoryDialog(history) { showHistory = false }
+                // 假设历史记录弹窗的显示状态是 showHistory
+                if (showHistory) {
+                    HistoryDialog(
+                        history = history,
+                        onDismiss = { showHistory = false },
+                        // 👇 传入 ViewModel 的删除函数
+                        onDelete = { recordId ->
+                            viewModel.deleteRecordById(recordId)
+                        }
+                    )
+                }
 
                 if (showConfig) {
                     ConfigDialog(

@@ -43,6 +43,13 @@ class ScoreViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun resetScore() { leftScore = 0; rightScore = 0 }
 
+    // 根据ID删除历史记录
+    fun deleteRecordById(recordId: Int) {
+        viewModelScope.launch {
+            dao.deleteById(recordId)
+        }
+    }
+
     // 保存当前比分到历史
     fun saveRecord() {
         viewModelScope.launch {
