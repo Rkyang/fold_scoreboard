@@ -71,12 +71,10 @@ fun TeamPanel(
     score: Int,
     bgColor: Color,
     onScoreClick: () -> Unit,
-    onNameChange: (String) -> Unit, // 简化版，实际可用Dialog修改
-    onColorChange: () -> Unit // 简化版
+    onEditConfig: () -> Unit // 触发配置修改的点击
 ) {
     Column(
         modifier = modifier
-            .fillMaxHeight()
             .background(bgColor)
             .clickable { onScoreClick() }, // 点击整个区域加分
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -89,6 +87,10 @@ fun TeamPanel(
         Button(onClick = onScoreClick) {
             Icon(Icons.Default.Add, contentDescription = "Add")
             Text(" 加分")
+        }
+        // 允许在面板上触发配置修改
+        Button(onClick = onEditConfig) {
+            Text("配置")
         }
     }
 }
@@ -143,25 +145,23 @@ fun MainControlScreen(
         Row(modifier = Modifier.padding(padding).fillMaxSize()) {
             // 左队
             TeamPanel(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).fillMaxHeight(),
                 name = viewModel.leftName,
                 score = viewModel.leftScore,
                 bgColor = viewModel.leftColor,
                 onScoreClick = { viewModel.incrementLeft() },
-                onNameChange = { /* 触发修改逻辑 */ },
-                onColorChange = { /* 触发修改逻辑 */ }
+                onEditConfig = { onEditConfig(true) }
             )
             // 分割线
             Box(modifier = Modifier.width(2.dp).fillMaxHeight().background(Color.Black))
             // 右队
             TeamPanel(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).fillMaxHeight(),
                 name = viewModel.rightName,
                 score = viewModel.rightScore,
                 bgColor = viewModel.rightColor,
                 onScoreClick = { viewModel.incrementRight() },
-                onNameChange = {},
-                onColorChange = {}
+                onEditConfig = { onEditConfig(false) }
             )
         }
     }
@@ -177,6 +177,7 @@ fun ConfigDialog(
     var text by remember { mutableStateOf(initialName) }
     // 简单预设几个颜色
     val colors = listOf(Color(0xFFE3F2FD), Color(0xFFFFEBEE), Color(0xFFE8F5E9), Color(0xFFFFF3E0))
+    var selectedColor by remember { mutableStateOf(colors.first()) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -193,13 +194,20 @@ fun ConfigDialog(
                                 .size(40.dp)
                                 .padding(4.dp)
                                 .background(color)
-                                .clickable { onConfirm(text, color); onDismiss() }
+                                .clickable { selectedColor = color }
+                                .let {
+                                    if (selectedColor == color) it.width(44.dp).height(44.dp) else it // 选中高亮
+                                }
                         )
                     }
                 }
             }
         },
-        confirmButton = {}
+        confirmButton = {
+            Button(onClick = { onConfirm(text, selectedColor); onDismiss() }) {
+                Text("确定")
+            }
+        }
     )
 }
 
@@ -231,39 +239,3 @@ fun HistoryDialog(history: List<ScoreRecord>, onDismiss: () -> Unit) {
         }
     }
 }
-
-// --- 外屏展示逻辑 (Presentation) ---
-// 这是一个特殊的类，用于在第二块屏幕上绘制 UI
-//class ScorePresentation(
-//    context: Context,
-//    display: Display,
-//    private val viewModel: ScoreViewModel,
-//    themeFoldscorePresentation: Int
-//) : Presentation(context, display) {
-//
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        // Presentation 也是一个 Dialog，可以直接setContent使用Compose
-//        setContentView(ComposeView(context).apply {
-//            setContent {
-//                MaterialTheme {
-//                    // 外屏只展示，不可交互，字号特大
-//                    Row(modifier = Modifier.fillMaxSize()) {
-//                        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(viewModel.leftColor), contentAlignment = Alignment.Center) {
-//                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-//                                Text(viewModel.leftName, fontSize = 30.sp)
-//                                Text("${viewModel.leftScore}", fontSize = 200.sp, fontWeight = FontWeight.Black)
-//                            }
-//                        }
-//                        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(viewModel.rightColor), contentAlignment = Alignment.Center) {
-//                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-//                                Text(viewModel.rightName, fontSize = 30.sp)
-//                                Text("${viewModel.rightScore}", fontSize = 200.sp, fontWeight = FontWeight.Black)
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        })
-//    }
-//}

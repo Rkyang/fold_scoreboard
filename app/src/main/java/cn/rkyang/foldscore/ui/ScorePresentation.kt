@@ -41,7 +41,7 @@ class ScorePresentation(
     context: Context,
     display: Display,
     private val viewModel: ScoreViewModel,
-    themeResId: Int // 接收来自 MainActivity 的专用主题 ID
+    themeResId: Int // 接收专用主题 ID
 ) : Presentation(context, display, themeResId), LifecycleOwner, SavedStateRegistryOwner {
 
     // --- 生命周期管理核心组件 ---
@@ -56,10 +56,8 @@ class ScorePresentation(
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
         // 2. 设置 ComposeView
-        // 我们不使用 setContentView(R.layout.xxx)，直接用 ComposeView
         val composeView = ComposeView(context).apply {
             // 关键：将 View 树与当前的生命周期拥有者绑定
-            // 如果不写这两行，Compose 会报 "LifecycleOwner not found" 错误并崩溃
             setViewTreeLifecycleOwner(this@ScorePresentation)
             setViewTreeSavedStateRegistryOwner(this@ScorePresentation)
 
@@ -68,13 +66,8 @@ class ScorePresentation(
 
             setContent {
                 MaterialTheme {
-                    // 监听 ViewModel 数据
-                    val leftScore = viewModel.leftScore // 假设你的ViewModel里这是StateFlow，如果是MutableState直接用
-                    val rightScore = viewModel.rightScore
-                    // 注意：如果你的 ViewModel 用的是 mutableIntStateOf，则直接访问 viewModel.leftScore 即可
-                    // 这里为了兼容性，假设是 StateFlow。如果是 Compose State，请去掉 .collectAsState()
 
-                    // 下面演示直接读取 Compose State 的写法 (对应你之前提供的 ViewModel)
+                    // 获取 ViewModel 中的 Compose State
                     val lScore = viewModel.leftScore
                     val rScore = viewModel.rightScore
                     val lName = viewModel.leftName
@@ -95,21 +88,21 @@ class ScorePresentation(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
                                     text = lName,
-                                    fontSize = 40.sp, // 外屏名字稍微小点
+                                    fontSize = 40.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.Black
                                 )
                                 Spacer(modifier = Modifier.height(20.dp))
                                 Text(
                                     text = "$lScore",
-                                    fontSize = 180.sp, // 超大比分
+                                    fontSize = 180.sp,
                                     fontWeight = FontWeight.Black,
                                     color = Color.Black
                                 )
                             }
                         }
 
-                        // 中间分割线 (可选)
+                        // 中间分割线
                         Box(modifier = Modifier.width(4.dp).fillMaxHeight().background(Color.Black))
 
                         // 右队展示区
