@@ -234,35 +234,36 @@ fun HistoryDialog(history: List<ScoreRecord>, onDismiss: () -> Unit) {
 
 // --- 外屏展示逻辑 (Presentation) ---
 // 这是一个特殊的类，用于在第二块屏幕上绘制 UI
-class ScorePresentation(
-    context: Context,
-    display: Display,
-    private val viewModel: ScoreViewModel
-) : Presentation(context, display) {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        // Presentation 也是一个 Dialog，可以直接setContent使用Compose
-        setContentView(ComposeView(context).apply {
-            setContent {
-                MaterialTheme {
-                    // 外屏只展示，不可交互，字号特大
-                    Row(modifier = Modifier.fillMaxSize()) {
-                        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(viewModel.leftColor), contentAlignment = Alignment.Center) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(viewModel.leftName, fontSize = 30.sp)
-                                Text("${viewModel.leftScore}", fontSize = 200.sp, fontWeight = FontWeight.Black)
-                            }
-                        }
-                        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(viewModel.rightColor), contentAlignment = Alignment.Center) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(viewModel.rightName, fontSize = 30.sp)
-                                Text("${viewModel.rightScore}", fontSize = 200.sp, fontWeight = FontWeight.Black)
-                            }
-                        }
-                    }
-                }
-            }
-        })
-    }
-}
+//class ScorePresentation(
+//    context: Context,
+//    display: Display,
+//    private val viewModel: ScoreViewModel,
+//    themeFoldscorePresentation: Int
+//) : Presentation(context, display) {
+//
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        // Presentation 也是一个 Dialog，可以直接setContent使用Compose
+//        setContentView(ComposeView(context).apply {
+//            setContent {
+//                MaterialTheme {
+//                    // 外屏只展示，不可交互，字号特大
+//                    Row(modifier = Modifier.fillMaxSize()) {
+//                        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(viewModel.leftColor), contentAlignment = Alignment.Center) {
+//                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+//                                Text(viewModel.leftName, fontSize = 30.sp)
+//                                Text("${viewModel.leftScore}", fontSize = 200.sp, fontWeight = FontWeight.Black)
+//                            }
+//                        }
+//                        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(viewModel.rightColor), contentAlignment = Alignment.Center) {
+//                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+//                                Text(viewModel.rightName, fontSize = 30.sp)
+//                                Text("${viewModel.rightScore}", fontSize = 200.sp, fontWeight = FontWeight.Black)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        })
+//    }
+//}
